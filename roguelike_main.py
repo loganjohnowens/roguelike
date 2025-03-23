@@ -135,8 +135,7 @@ def dev_tools():
             new_room = True
 
 
-def main():
-    screen()
+def def_vars():
     global pos
     global direct
     global player_size
@@ -151,12 +150,26 @@ def main():
     direct = [True, True, True, True]
     pos = [250, 250]
     player_size = [10, 10]
+
+
+def first_is_true():
+    global first
+    first = True
+
+
+def exit_button():
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+
+def main():
+    screen()
+    def_vars()
     random_square()
     while loop:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        exit_button()
         restet_screen()
         player_move()
         player()
@@ -164,7 +177,7 @@ def main():
         dev_tools()
         doors()
         update_screen()
-        first = True
+        first_is_true()
 
 
 main()
