@@ -1,6 +1,7 @@
 import pygame
 import sys
 import random
+import time
 
 
 def screen():
@@ -70,17 +71,46 @@ def random_square():
     global long
     global pos_tall
     global pos_long
-    tall = random.randint(200, 300)
-    long = random.randint(200, 300)
+    global blocked_doors
+    global room_shape
+    global up_down
+    global left_right
+    room_shape = random.randint(1, 2)
+    blocked_doors = [0, 0, 0, 0]
+    blocked_doors[0] = random.randint(0, 10)
+    blocked_doors[1] = random.randint(0, 10)
+    blocked_doors[2] = random.randint(0, 10)
+    blocked_doors[3] = random.randint(0, 10)
+    door_check()
+    tall = random.randint(200, 400)
+    long = random.randint(200, 400)
     pos_tall = (500 - tall) / 2
     pos_long = (500 - long) / 2
+    up_down = random.randint(100, tall - 50)
+    left_right = random.randint(100, long - 100)
 
 
 def display_random_square():
-    walls(long, 20, pos_long, pos_tall)
-    walls(long + 20, 20, pos_long, pos_tall + tall)
-    walls(20, tall, pos_long, pos_tall)
-    walls(20, tall, pos_long + long, pos_tall)
+    global room_shape
+    global long
+    global pos_long
+    global pos_tall
+    global tall
+    global up_down
+    global left_right
+    if room_shape == 1:
+        walls(long, 20, pos_long, pos_tall)
+        walls(long + 20, 20, pos_long, pos_tall + tall)
+        walls(20, tall, pos_long, pos_tall)
+        walls(20, tall, pos_long + long, pos_tall)
+    if room_shape == 2:
+        walls(long + 20, 20, pos_long, pos_tall + tall)
+        walls(20, tall, pos_long, pos_tall)
+        walls(long - left_right, 20, pos_long, pos_tall)
+        walls(20, tall - up_down, pos_long + long - left_right, pos_tall)
+        walls(left_right + 20, 20, long - left_right +
+              pos_long, tall - up_down + pos_tall)
+        walls(20, up_down, long + pos_long, tall - up_down + pos_tall)
 
 
 def doors():
@@ -91,30 +121,67 @@ def doors():
     global new_room
     global player_size
     global pos
+    global curent_room
+    global visted_rooms
+    global blocked_doors
+    global left_right
+    global up_down
     rect2 = pygame.Rect(pos[0], pos[1], player_size[0], player_size[1])
-    pygame.draw.rect(canvas, (255, 50, 0),
-                     pygame.Rect(pos_long + long / 2, pos_tall + 20, 20, 10))
+    if blocked_doors[0] < 8 and room_shape == 1:
+        pygame.draw.rect(canvas, (255, 50, 0),
+                         pygame.Rect(pos_long + long / 2, pos_tall + 20, 20, 10))
     rect1 = pygame.Rect(pos_long + long / 2, pos_tall + 20, 20, 10)
-    if rect1.colliderect(rect2):
+
+    if blocked_doors[0] < 8 and room_shape == 2:
+        pygame.draw.rect(canvas, (255, 50, 0),
+                         pygame.Rect(pos_long + (long - left_right) / 2, pos_tall + 20, 20, 10))
+
+        rect1 = pygame.Rect(
+            pos_long + (long - left_right) / 2, pos_tall + 20, 20, 10)
+
+    if rect1.colliderect(rect2) and blocked_doors[0] < 8:
         new_room = True
-    pygame.draw.rect(canvas, (255, 50, 0),
-                     pygame.Rect(pos_long + long / 2, pos_tall + tall - 10, 20, 10))
-    rect1 = pygame.Rect(pos_long + long / 2, pos_tall + tall - 10, 20, 10)
-    if rect1.colliderect(rect2):
+        visted_rooms[(curent_room[0], curent_room[1] + 1)] = "place holder"
+        curent_room = (curent_room[0], curent_room[1] + 1)
+
+    if blocked_doors[2] < 8:
+        pygame.draw.rect(canvas, (255, 50, 0),
+                         pygame.Rect(pos_long + long / 2, pos_tall + tall - 10, 20, 10))
+        rect1 = pygame.Rect(pos_long + long / 2, pos_tall + tall - 10, 20, 10)
+
+    if rect1.colliderect(rect2) and blocked_doors[2] < 8:
         new_room = True
-    pygame.draw.rect(canvas, (255, 50, 0),
-                     pygame.Rect(pos_long + 20, pos_tall + tall / 2, 10, 20))
-    rect1 = pygame.Rect(pos_long + 20, pos_tall + tall / 2, 10, 20)
-    if rect1.colliderect(rect2):
+        visted_rooms[(curent_room[0], curent_room[1] - 1)] = "place holder"
+        curent_room = (curent_room[0], curent_room[1] - 1)
+
+    if blocked_doors[1] < 8:
+        pygame.draw.rect(canvas, (255, 50, 0),
+                         pygame.Rect(pos_long + 20, pos_tall + tall / 2, 10, 20))
+        rect1 = pygame.Rect(pos_long + 20, pos_tall + tall / 2, 10, 20)
+
+    if rect1.colliderect(rect2) and blocked_doors[1] < 8:
         new_room = True
-    pygame.draw.rect(canvas, (255, 50, 0),
-                     pygame.Rect(pos_long + long - 10, pos_tall + tall / 2, 10, 20))
-    rect1 = pygame.Rect(pos_long + long - 10, pos_tall + tall / 2, 10, 20)
-    if rect1.colliderect(rect2):
+        visted_rooms[(curent_room[0] - 1, curent_room[1])] = "place holder"
+        curent_room = (curent_room[0] - 1, curent_room[1])
+
+    if blocked_doors[3] < 8 and room_shape == 1:
+        pygame.draw.rect(canvas, (255, 50, 0),
+                         pygame.Rect(pos_long + long - 10, pos_tall + tall / 2, 10, 20))
+        rect1 = pygame.Rect(pos_long + long - 10, pos_tall + tall / 2, 10, 20)
+
+    if blocked_doors[3] < 8 and room_shape == 2:
+        pygame.draw.rect(canvas, (255, 50, 0),
+                         pygame.Rect(pos_long + long - 10, tall - up_down + pos_tall + up_down / 2, 10, 20))
+        rect1 = pygame.Rect(pos_long + long - 10,
+                            tall - up_down + pos_tall + up_down / 2, 10, 20)
+
+    if rect1.colliderect(rect2) and blocked_doors[3] < 8:
         new_room = True
+        visted_rooms[(curent_room[0] + 1, curent_room[1])] = "place holder"
+        curent_room = (curent_room[0] + 1, curent_room[1])
+
     if new_room is True:
-        random_square()
-        pos = [250, 250]
+        respawn()
         new_room = False
 
 
@@ -123,6 +190,8 @@ def dev_tools():
     global direct
     global loop
     global new_room
+    global visted_rooms
+    global curent_room
     keys = pygame.key.get_pressed()
     if keys[pygame.K_l]:
         dev_mode = True
@@ -133,6 +202,10 @@ def dev_tools():
             loop = False
         if keys[pygame.K_r]:
             new_room = True
+        if keys[pygame.K_v]:
+            print(visted_rooms)
+        if keys[pygame.K_c]:
+            print(curent_room)
 
 
 def def_vars():
@@ -143,6 +216,10 @@ def def_vars():
     global dev_mode
     global loop
     global new_room
+    global visted_rooms
+    global curent_room
+    curent_room = [0, 0]
+    visted_rooms = {}
     new_room = False
     loop = True
     dev_mode = False
@@ -164,10 +241,49 @@ def exit_button():
             sys.exit()
 
 
+def frame_cap(sleep):
+    time.sleep(sleep)
+
+
+def set_up_visted_rooms():
+    visted_rooms[(0, 0)] = "place holder"
+
+
+def respawn():
+    global pos
+    global left_right
+    global long
+    global pos_long
+    global room_shape
+    random_square()
+    if room_shape == 1:
+        pos = [250, 250]
+    if room_shape == 2:
+        pos[0] = left_right / 2 + pos_long
+        pos[1] = long / 2 + pos_tall
+
+
+def door_check():
+    global blocked_doors
+    check = 0
+    while True:
+        for i in blocked_doors:
+            if i > 7:
+                check += 1
+        if check == 4:
+            blocked_doors[0] = random.randint(0, 10)
+            blocked_doors[1] = random.randint(0, 10)
+            blocked_doors[2] = random.randint(0, 10)
+            blocked_doors[3] = random.randint(0, 10)
+        else:
+            break
+
+
 def main():
     screen()
     def_vars()
     random_square()
+    set_up_visted_rooms()
     while loop:
         exit_button()
         restet_screen()
@@ -178,6 +294,7 @@ def main():
         doors()
         update_screen()
         first_is_true()
+        frame_cap(.005)
 
 
 main()
