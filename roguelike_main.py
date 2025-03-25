@@ -201,16 +201,34 @@ def frame_cap(sleep):
 
 
 def set_up_visted_rooms():
-    visted_rooms[(0, 0)] = "place holder"
+    global blocked_doors
+    global room_shape
+    global long
+    global pos_long
+    global pos_tall
+    global tall
+    global up_down
+    global left_right
+    visted_rooms[(0, 0)] = {
+                    'room_shape_1': room_shape,
+                    'long': long,
+                    'pos_long': pos_long,
+                    'pos_tall': pos_tall,
+                    'tall': tall,
+                    'up_down': up_down,
+                    'left_right': left_right,
+                    'blocked_doors': blocked_doors
+                }
 
 
-def respawn():
+def respawn(new_square):
     global pos
     global left_right
     global pos_long
     global room_shape
     global tall
-    random_square()
+    if new_square is True:
+        random_square()
     if room_shape == 1:
         pos = [250, 250]
     if room_shape == 2:
@@ -237,6 +255,21 @@ def door_check():
 def display_doors(x_long, y_long, x, y, directoin_of_door):
     global curent_room
     global new_room
+    global blocked_doors
+    global room_shape
+    global long
+    global pos_long
+    global pos_tall
+    global tall
+    global up_down
+    global left_right
+    used_rooms = False
+    how_to_change_cords = {
+        0: (0, 1),
+        1: (1, 0),
+        2: (0, -1),
+        3: (-1, 0)
+    }
     rect2 = pygame.Rect(pos[0], pos[1], player_size[0], player_size[1])
     if blocked_doors[directoin_of_door] < 8 and blocked_doors[directoin_of_door] < 8:
         pygame.draw.rect(canvas, (255, 50, 0),
@@ -245,21 +278,35 @@ def display_doors(x_long, y_long, x, y, directoin_of_door):
 
     if rect1.colliderect(rect2) and blocked_doors[directoin_of_door] < 8:
         new_room = True
-        if directoin_of_door == 0:
-            visted_rooms[(curent_room[0], curent_room[1] + 1)] = "place holder"
-            curent_room = (curent_room[0], curent_room[1] + 1)
-        if directoin_of_door == 1:
-            visted_rooms[(curent_room[0] + 1, curent_room[1])] = "place holder"
-            curent_room = (curent_room[0] + 1, curent_room[1])
-        if directoin_of_door == 2:
-            visted_rooms[(curent_room[0], curent_room[1] - 1)] = "place holder"
-            curent_room = (curent_room[0], curent_room[1] - 1)
-        if directoin_of_door == 3:
-            visted_rooms[(curent_room[0] - 1, curent_room[1])] = "place holder"
-            curent_room = (curent_room[0] - 1, curent_room[1])
-    if new_room is True:
-        respawn()
-        new_room = False
+        if directoin_of_door in how_to_change_cords:
+            movement_change = how_to_change_cords[directoin_of_door]
+            curent_room = (
+                curent_room[0] + movement_change[0], curent_room[1] + movement_change[1])
+            if curent_room in visted_rooms:
+                room_shape = visted_rooms[curent_room]['room_shape_1']
+                long = visted_rooms[curent_room]['long']
+                pos_long = visted_rooms[curent_room]['pos_long']
+                pos_tall = visted_rooms[curent_room]['pos_tall']
+                tall = visted_rooms[curent_room]['tall']
+                up_down = visted_rooms[curent_room]['up_down']
+                left_right = visted_rooms[curent_room]['left_right']
+                blocked_doors = visted_rooms[curent_room]['blocked_doors']
+                respawn(False)
+                used_rooms = True
+            else:
+                if new_room is True and used_rooms is not True:
+                    respawn(True)
+                visted_rooms[(curent_room)] = {
+                    'room_shape_1': room_shape,
+                    'long': long,
+                    'pos_long': pos_long,
+                    'pos_tall': pos_tall,
+                    'tall': tall,
+                    'up_down': up_down,
+                    'left_right': left_right,
+                    'blocked_doors': blocked_doors
+                }
+    new_room = False
 
 
 def main():
