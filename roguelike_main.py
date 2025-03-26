@@ -76,11 +76,7 @@ def random_square():
     global up_down
     global left_right
     room_shape = random.randint(1, 2)
-    blocked_doors = [0, 0, 0, 0]
-    blocked_doors[0] = random.randint(0, 10)
-    blocked_doors[1] = random.randint(0, 10)
-    blocked_doors[2] = random.randint(0, 10)
-    blocked_doors[3] = random.randint(0, 10)
+    genorate_blocked_doors()
     door_check()
     tall = random.randint(200, 400)
     long = random.randint(200, 400)
@@ -210,30 +206,36 @@ def set_up_visted_rooms():
     global up_down
     global left_right
     visted_rooms[(0, 0)] = {
-                    'room_shape_1': room_shape,
-                    'long': long,
-                    'pos_long': pos_long,
-                    'pos_tall': pos_tall,
-                    'tall': tall,
-                    'up_down': up_down,
-                    'left_right': left_right,
-                    'blocked_doors': blocked_doors
-                }
+        'room_shape_1': room_shape,
+        'long': long,
+        'pos_long': pos_long,
+        'pos_tall': pos_tall,
+        'tall': tall,
+        'up_down': up_down,
+        'left_right': left_right,
+        'blocked_doors': blocked_doors
+    }
 
 
 def respawn(new_square):
+    global movement_change
     global pos
-    global left_right
-    global pos_long
     global room_shape
-    global tall
-    if new_square is True:
+    if new_square:
         random_square()
-    if room_shape == 1:
-        pos = [250, 250]
-    if room_shape == 2:
-        pos[0] = left_right / 2 + pos_long
-        pos[1] = tall / 2 + pos_tall
+    if movement_change == (0, -1) and room_shape == 1:
+        pos = [pos_long + long / 2, pos_tall + 40]
+    if movement_change == (0, -1) and room_shape == 2:
+        pos = [pos_long + (long - left_right) / 2, pos_tall + 40]
+    if movement_change == (-1, 0) and room_shape == 1:
+        pos = [pos_long + long - 10 - 20, pos_tall + tall / 2]
+    if movement_change == (-1, 0) and room_shape == 2:
+        pos = [pos_long + long - 10 - 20, tall -
+               up_down + pos_tall + up_down / 2]
+    if movement_change == (0, 1):
+        pos = [pos_long + long / 2, pos_tall + tall - 10 - 20]
+    if movement_change == (1, 0):
+        pos = [pos_long + 40, pos_tall + tall / 2]
 
 
 def door_check():
@@ -263,6 +265,7 @@ def display_doors(x_long, y_long, x, y, directoin_of_door):
     global tall
     global up_down
     global left_right
+    global movement_change
     used_rooms = False
     how_to_change_cords = {
         0: (0, 1),
@@ -309,11 +312,56 @@ def display_doors(x_long, y_long, x, y, directoin_of_door):
     new_room = False
 
 
+def genorate_blocked_doors():
+    global visted_rooms
+    global blocked_doors
+    blocked_doors = [0, 0, 0, 0]
+    how_to_change_cords = {
+        0: (0, 1),
+        1: (1, 0),
+        2: (0, -1),
+        3: (-1, 0)
+    }
+    round_number = 0
+    almost_blocked_doors = [False, False, False, False]
+    for checking_room in (how_to_change_cords[0], how_to_change_cords[1], how_to_change_cords[2], how_to_change_cords[3]):
+        if (curent_room[0] + checking_room[0], curent_room[1] + checking_room[1]) in visted_rooms:
+            almost_blocked_doors[round_number] = visted_rooms[
+                curent_room[0] + checking_room[0], curent_room[1] + checking_room[1]]['blocked_doors']
+        round_number += 1
+
+    if almost_blocked_doors[0] is not True:
+        blocked_doors[0] = random.randint(0, 10)
+    if almost_blocked_doors[0] is not False:
+        blocked_doors[0] = almost_blocked_doors[0][2]
+
+    if almost_blocked_doors[1] is not True:
+        blocked_doors[1] = random.randint(0, 10)
+    if almost_blocked_doors[1] is not False:
+        blocked_doors[1] = almost_blocked_doors[1][3]
+
+    if almost_blocked_doors[2] is not True:
+        blocked_doors[2] = random.randint(0, 10)
+    if almost_blocked_doors[2] is not False:
+        blocked_doors[2] = almost_blocked_doors[2][0]
+
+    if almost_blocked_doors[3] is not True:
+        blocked_doors[3] = random.randint(0, 10)
+    if almost_blocked_doors[3] is not False:
+        blocked_doors[3] = almost_blocked_doors[3][1]
+
+
+def set_to_square():
+    global room_shape
+    room_shape = 1
+
+
 def main():
     screen()
     def_vars()
     random_square()
     set_up_visted_rooms()
+    set_to_square()
     while loop:
         exit_button()
         restet_screen()
